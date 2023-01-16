@@ -34,6 +34,14 @@ log = logging.getLogger(__name__)
 # ================== Test utils
 
 # goal: accurately remove the background ibd according to the current assumption
+"""
+INPUT FORMATS
+
+IBD format:  genotype_id_1, genotype_id_2, chromosome, start, end, is_full_ibd, length (cM)
+Pedigree Dict: the key is the id, the value is [sex, age, parent_1, parent_2]
+Sex: Male = 1, Female = 0, None = None
+
+"""
 
 def test_one():
     up_dict1 = {
@@ -137,3 +145,26 @@ def test_three():
     )
 
     assert(new_ca1 == -5)
+
+def test_toy1():
+    toy_dict1 = {
+                    '1': [0, None, 'b', 'a'],
+                    '2': [1, None, 'b', 'a'],
+                    '3': [1, None, 'b', 'a'],
+                    'a': [0, None, '0', '0'],
+                    'b': [1, None, 'h', 'g'],
+                    'c': [0, None, 'h', 'g'],
+                    # 'd': [1, None, 'h', 'g'],
+                    'g': [0, None, '0', '0'],
+                    'h': [1, None, 'l', 'k'],
+                    'i': [0, None, 'n', 'o'],
+                    'j': [1, None, '0', '0'],
+                    'k': [0, None, '0', '0'],
+                    'l': [1, None, 'p', 'q'],
+                }
+
+    toy_dict2 = {
+        '4': [1, None, 'd', 'e'],
+        '5': [2, None, 'd', 'e'],
+        'e': [2, None, 'l', 'm'],
+    }
