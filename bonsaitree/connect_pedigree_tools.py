@@ -954,6 +954,11 @@ def drop_background_ibd(
         L_merged_tot = L_tot_max,
     )
 
+    print("compute druid", druid_deg)
+    # druid_deg = 6
+
+    print("ca1", ca1, "ca2", ca2, "degree", druid_deg)
+
     # find the adjusted degree through ca1
     child_deg = po1.rels[exempt_child_id][ca1][0]
     adj_deg = druid_deg - child_deg
@@ -967,8 +972,16 @@ def drop_background_ibd(
     adj_deg1 = int(np.floor(adj_deg/2))
     adj_deg2 = int(np.ceil(adj_deg/2))
     node_dict = {root_id : {ca1 : adj_deg1, ca2 : adj_deg2}}
+
+    # print("computed relas: ",  node_dict)
+    # root_id = -9
+    # node_dict = {-9 : {-13 : 2, -8 : 2}}
+    # print("reset relas: ",  node_dict)
+
     node_dict.update(leave_one_out_node_dict1)
     node_dict.update(node_dict2)
+
+    print("final relas: ", node_dict)
 
     log_prob_ibd = get_log_prob_ibd(
         node_dict = node_dict,

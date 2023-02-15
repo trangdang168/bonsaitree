@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 
 tests/__pycache__/test_dropbackground.cpython-37-pytest-6.2.5.pyc
+bonsaitree/__pycache__/analytical_likelihood_tools.cpython-37.pyc
+bonsaitree/__pycache__/connect_pedigree_tools.cpython-37.pyc
+.gitignore
+tests/__pycache__/test_dropbackground.cpython-37-pytest-6.2.5.pyc
