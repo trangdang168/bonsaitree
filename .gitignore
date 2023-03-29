@@ -158,9 +158,5 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-
-tests/__pycache__/test_dropbackground.cpython-37-pytest-6.2.5.pyc
-bonsaitree/__pycache__/analytical_likelihood_tools.cpython-37.pyc
-bonsaitree/__pycache__/connect_pedigree_tools.cpython-37.pyc
-.gitignore
-tests/__pycache__/test_dropbackground.cpython-37-pytest-6.2.5.pyc
+tests/__pycache__/*.pyc
+bonsaitree/__pycache__/*.pyc
