@@ -80,10 +80,10 @@ def test_toy_group_ibd_pairs():
     ]}
     grouped = group_ibd_pairs(chrom_complete_ibd_segs_dict)
     assert(grouped == {'21': 
-    {'21 10867286 36249317 False 25.382030999999998 2': {2, 4, 5, 6},
-     '21 42583395 48097120 False 5.513724999999994 2': {2, 6},
-     '21 15271418 22681881 False 7.410463 2': {2, 4}, 
-     '21 15279616 21882038 False 6.602422000000001 2': {2, 4}}})
+    {('21', 10867286, 36249317, False, 25.382030999999998, 2): {2, 4, 5, 6},
+     ('21', 42583395, 48097120, False, 5.513724999999994, 2): {2, 6},
+     ('21', 15271418, 22681881, False, 7.410463, 2): {2, 4}, 
+     ('21', 15279616, 21882038, False, 6.602422000000001, 2): {2, 4}}})
 
     logging.info("Test toy_group_ibd_pairs passed")
 
@@ -101,14 +101,13 @@ def test_get_removal_orders():
     indept_gt_set2 = {4, 5, 6}
 
     ibd_removal_orders = calculate_removal_orders(chrom_complete_ibd_segs_dict, indept_gt_set1, indept_gt_set2)
-    expected_ibd_remove_orders = [
-        '21 37421765 42425427 False 5.0036619999999985 2', 
-        '21 42583395 48097120 False 5.513724999999994 2', 
-        '21 15279616 21882038 False 6.602422000000001 2', 
-        '21 15271418 22681881 False 7.410463 2', 
-        '21 36210416 48097120 False 11.886703999999995 2', 
-        '21 10867286 36249317 False 25.382030999999998 2']
-
+    expected_ibd_remove_orders = {'21': [
+        ('21', 37421765, 42425427, False, 5.0036619999999985, 2), 
+        ('21', 42583395, 48097120, False, 5.513724999999994, 2), 
+        ('21', 15279616, 21882038, False, 6.602422000000001, 2), 
+        ('21', 15271418, 22681881, False, 7.410463, 2), 
+        ('21', 36210416, 48097120, False, 11.886703999999995, 2), 
+        ('21', 10867286, 36249317, False, 25.382030999999998, 2)]}
     assert(ibd_removal_orders == expected_ibd_remove_orders)
 
     logging.info("Successfully get_remove_orders on different lengths (bp).")
@@ -126,19 +125,42 @@ def test_get_removal_orders():
     ]}
     ibd_removal_orders = calculate_removal_orders(chrom_complete_ibd_segs_dict, indept_gt_set1, indept_gt_set2)
     
-    expected_ibd_remove_orders = [
-        '21 12583395 18097120 False 5.513724999999994 2', 
-        '21 42583395 48097120 False 5.513724999999994 2', 
-        '21 15279616 21882038 False 6.602422000000001 2', 
-        '21 15271418 22681881 False 7.410463 2']
+    expected_ibd_remove_orders = {'21': [
+        ('21', 12583395, 18097120, False, 5.513724999999994, 2), 
+        ('21', 42583395, 48097120, False, 5.513724999999994, 2), 
+        ('21', 15279616, 21882038, False, 6.602422000000001, 2), 
+        ('21', 15271418, 22681881, False, 7.410463, 2)]}
 
     assert(expected_ibd_remove_orders == ibd_removal_orders)
     logging.info("Successfully get_remove_orders on different cohort sizes (bp).")
 
+def test_drop_background():
+    logging.info("------Test drop background on b and f--------")
+    po, married_in, genotyped, mcra_df, sources = toy_set_up()
+
+    node_dict = {-22: {-13: 3, -17: 3}, -13: {1: 1, 2: 1, 3: 1}, -17: {6: 1, 7: 1, 8: 1}}
+    ca1 = -13 # b
+    ca2 = -17 # f
+    gt_set1 = po.rel_dict[ca1]['desc']
+    gt_set2 = po.rel_dict[ca2]['desc']
+    indept_gt_set1 = po.get_independent_inds(gt_set1)
+    indept_gt_set2 = po.get_independent_inds(gt_set2)
+    root_id = -22 # q
+    ibd_seg_list = read_ca_ibds(mcra_df)
+    print("INITIAL IBDS:")
+    print(ibd_seg_list)
+    ibd_kept = drop_background(node_dict, ca1, indept_gt_set1, ca2, indept_gt_set2, root_id, ibd_seg_list)
+    print("KEPT IBDS: ")
+    print(ibd_kept)
+
+
+
+
 def main():
-    test_toy_group_ibd_pairs()
+    # test_toy_group_ibd_pairs()
     # test_get_removal_orders()
-    test_toy_get_ibd_between_sets()
+    # test_toy_get_ibd_between_sets()
+    test_drop_background()
 
 if __name__ == "__main__":
     main()
