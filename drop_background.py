@@ -1,5 +1,6 @@
 from bonsaitree.pedigree_object import PedigreeObject
 from bonsaitree.ibd_tools import get_segment_length_list,  merge_ibd_segs
+from bonsaitree.node_dict_tools import extract_down_node_dict
 from bonsaitree.analytical_likelihood_tools import get_log_prob_ibd, get_ibd_pattern_log_prob, get_background_test_pval_gamma, get_var_total_length_approx, get_log_like_total_length_normal, get_background_test_pval_normal
 from bonsaitree.distributions import load_distributions, AUTO_GENOME_LENGTH, MIN_PARENT_CHILD_AGE_DIFF
 
@@ -172,7 +173,22 @@ def drop_background(node_dict, ca1, indept_gt_set1, ca2, indept_gt_set2, root_id
     
     return chrom_ibd_removal_orders[chrom][removed_ibd_index:]
 
+# gathering inputs for drop background
+def get_mcra_node_dict(mcra):
+    node_dicts = {}
+    founders = [-1774, -2080, -91862]
+    node_dict_path = "/homes/thdang/trang_amish/node_dict_"
+    for founder in founders:
+        with open(node_dict_path + str(-int(founder)) + ".json") as json_file:
+            data = json.load(json_file)
+            node_dicts[founder] = data
 
+    for founder in founders:
+        founder_node_dict = node_dicts[founder]
+        if mcra in founder_node_dict:
+            return extract_down_node_dict(mcra, founder_node_dict)
+
+    return None
 
 
 

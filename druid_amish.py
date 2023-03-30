@@ -4,8 +4,9 @@ import logging
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+import sys
 
-from itertools import combinations, product
+from itertools import permutations, product
 
 from bonsaitree.connect_pedigree_tools import drop_background_ibd, infer_degree_generalized_druid
 from bonsaitree.pedigree_object import PedigreeObject
@@ -16,7 +17,7 @@ from bonsai_tools import *
 from tests.convert_ids import *
 
 FORMAT = '%(asctime)s %(message)s'
-logging.basicConfig(format=FORMAT, level=logging.INFO)
+logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
 SEPARATOR = ";"
 
@@ -26,6 +27,9 @@ def druid(ca1, ca2, po, ibd_seg_list):
 
     ca1_desc_set = po.rel_dict[ca1]['desc']
     ca2_desc_set = po.rel_dict[ca2]['desc']
+
+    logging.debug("ca1 desc set " + str(ca1_desc_set))
+    logging.debug("ca2 desc set " + str(ca2_desc_set))
 
     gt_set1 = {i for i in ca1_desc_set if i > 0}
     gt_set2 = {i for i in ca2_desc_set if i > 0}
@@ -52,7 +56,7 @@ def druid(ca1, ca2, po, ibd_seg_list):
         indep_gt_set1 = po.get_independent_inds(gt_set1) # oldest ids in gt_set1 s.t. none is descended from another
 
         # one or no children of ca1? No information to evaluate background IBD
-        logging.info("Retrieve descendants from ca1\n")
+        logging.debug("Retrieve descendants from " + str(ca1))
         logging.debug("indep_gt_set1: " + str(indep_gt_set1) + "\n")
         if len(indep_gt_set1) < 2:
             # SHOULD NOT ENTER HERE
@@ -313,7 +317,8 @@ def validate_druid(po, common_ancestor_pairs, married_in, genotyped, outputfile,
     return df
     
 
-def amish():
+def amish(file_prefix):
+    logging.info("Results saved with prefix: " + file_prefix)
 
     logging.info("Retrieving AMISh married-in and genotyped individuals")
     married_in = "/homes/thdang/trang_amish/ped-aware/implementation/amish_married_in.csv"
@@ -330,7 +335,7 @@ def amish():
     mcras_df = pd.read_csv(mcra_file)
     sources = set(mcras_df["sources"].unique())
     logging.debug("DEBUG SOURCES")
-    indvs = list(combinations(sources, 2))
+    indvs = list(permutations(sources, 2))[:10]
 
     logging.info("There are " + str(len(indvs)) + " pairs of mcras to go through.")
 
@@ -340,7 +345,7 @@ def amish():
         state_dict = json.loads(json_file.read())
     po = PedigreeObject.init_from_state(state_dict)
 
-    validate_druid(po, indvs, married_in, genotyped, "/homes/thdang/trang_amish/bonsai_results/amish3_phasedibd3", mcras_df)
+    validate_druid(po, indvs, married_in, genotyped, file_prefix, mcras_df)
 
 def process_toy_ancestor_node(ancestor_node_str):
     ancestor_node_str = ancestor_node_str.split("&")
@@ -369,7 +374,7 @@ def process_toy_ibds(ibd_str):
         new_cohort[bonsai_id] = cohort_dict[indv]
     return ibd + "-" + str(new_cohort)
 
-def toy():
+def toy(file_prefix):
     logging.info("Test validate druid on toy")
 
     # include all individuals but p, q
@@ -408,11 +413,11 @@ def toy():
     mcra_df["ibd_str"] = mcra_df["ibd_str"].map(process_toy_ibds)
     #  [a&b, c&f] -- our code picked h&g (1, 2, 4) for smallest cohort, instead of d&e "b&a", "f&c", "h&g", 
     sources = pd.Series(["b&a", "f&c", "d&e", "h&g"]).map(process_toy_ancestor_node)
-    indvs = list(combinations(sources, 2))[:10] 
+    indvs = list(permutations(sources, 2))[:10] 
 
     logging.info("individuals examined: " + str(indvs))
 
-    df = validate_druid(po, indvs, married_in, genotyped, "toy_test.csv", mcra_df)
+    df = validate_druid(po, indvs, married_in, genotyped, file_prefix, mcra_df)
     df["ca1_thread_id"] = df["ca1"].map(TOY_DICT_TO_STRING)
     df["ca2_thread_id"] = df["ca2"].map(TOY_DICT_TO_STRING)
     df["real_root_thread_id"] = df["real_root_id"].map(TOY_DICT_TO_STRING)
@@ -462,8 +467,9 @@ def amish_ancestor_descendants():
 
 def main():
     # test_toy_ancestor_node()
-    # toy()
-    amish()
+    file_prefix = sys.argv[1]
+    # toy(file_prefix + "_toy")
+    amish(file_prefix)
     # amish_ancestor_descendants()
 
 if __name__ == "__main__":
