@@ -104,7 +104,6 @@ def druid(ca1, ca2, po, ibd_seg_list):
     exempt_child_id = None
     exempt_desc_set = None
     exempt_node_dict = None
-    logging.info("node_dict1 + " +  str(node_dict1[ca1]) + "\n")
     for child_id in node_dict1[ca1]:
         desc_deg_dict = get_desc_deg_dict(
             anc_id = child_id,
@@ -341,7 +340,7 @@ def amish():
         state_dict = json.loads(json_file.read())
     po = PedigreeObject.init_from_state(state_dict)
 
-    validate_druid(po, indvs, married_in, genotyped, "/homes/thdang/trang_amish/bonsai_results/amish3_phasedibd", mcras_df)
+    validate_druid(po, indvs, married_in, genotyped, "/homes/thdang/trang_amish/bonsai_results/amish3_phasedibd3", mcras_df)
 
 def process_toy_ancestor_node(ancestor_node_str):
     ancestor_node_str = ancestor_node_str.split("&")
@@ -459,12 +458,12 @@ def amish_ancestor_descendants():
         indep_gt_set = po.get_independent_inds(gt_set)
         res["desc"].append(indep_gt_set)
     
-    pd.DataFrame(res).to_csv("/homes/thdang/trang_amish/ancestor_descnendants.csv")
+    pd.DataFrame(res).to_csv("/homes/thdang/trang_amish/ancestor_descendants.csv")
 
 def main():
     # test_toy_ancestor_node()
-    toy()
-    # amish()
+    # toy()
+    amish()
     # amish_ancestor_descendants()
 
 if __name__ == "__main__":
