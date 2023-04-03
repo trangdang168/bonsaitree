@@ -7,7 +7,6 @@ from .exceptions import MissingNodeException
 
 INF = float('inf')
 
-
 def get_node_dict(
     ped_obj : Any,
     rels : Set[int],

@@ -60,7 +60,7 @@ def druid(ca1, ca2, po, ibd_seg_list):
         logging.debug("indep_gt_set1: " + str(indep_gt_set1) + "\n")
         if len(indep_gt_set1) < 2:
             # SHOULD NOT ENTER HERE
-            return None, ca1, 0
+            return None, ca1, 0, 0, 0
 
         node_dict1 = get_node_dict(
             ped_obj = po,
@@ -78,7 +78,7 @@ def druid(ca1, ca2, po, ibd_seg_list):
     if len(node_dict1[ca1]) < 2:
          # SHOULD NOT ENTER HERE
         logging.debug("URGENT: ca1 has NO descendant")
-        return None, ca1, 0
+        return None, ca1, 0, 0, 0
 
     if gt_set2:
         indep_gt_set2 = po.get_independent_inds(gt_set2) # oldest ids in gt_set2 s.t. none is descended from another
@@ -165,7 +165,7 @@ def druid(ca1, ca2, po, ibd_seg_list):
 
     if (exempt_desc_set is None or indep_gt_set2 is None):
         # SHOULD NEVER ENTER HERE EITHER
-        return None, None, None
+        return None, None, None, 0, 0
 
     logging.debug("druid_deg inputs: exempt_desc_set--" + str(exempt_desc_set) \
                 + "\nindep_gt_set2--" + str(indep_gt_set2) +"\n" + "node dict2: " \
@@ -192,7 +192,7 @@ def druid(ca1, ca2, po, ibd_seg_list):
     adj_deg2 = int(np.ceil(adj_deg/2))
     node_dict = {root_id : {ca1 : adj_deg1, ca2 : adj_deg2}}
 
-    return node_dict, root_id, L_tot
+    return node_dict, root_id, L_tot, ca1, ca2
 
 def read_ca_ibds(df):
     bonsai_segments = []
@@ -257,7 +257,9 @@ def validate_druid(po, common_ancestor_pairs, married_in, genotyped, outputfile,
         for ca1, ca2 in pairs:
             logging.debug("for ca1-" + str(ca1) + "-and indv2-" + str(ca2) +"-we have pairs-" + str(pairs))
 
-            node_dict, fake_root_id, L_tot = druid(ca1, ca2, po, ibd_seg_list)
+            node_dict, fake_root_id, L_tot, new_ca1, new_ca2 = druid(ca1, ca2, po, ibd_seg_list)
+            ca1 = new_ca1
+            ca2 = new_ca2
 
             if (node_dict is None):
                 res["real"].append(None)
@@ -317,8 +319,7 @@ def validate_druid(po, common_ancestor_pairs, married_in, genotyped, outputfile,
     return df
     
 
-def amish(file_prefix):
-    logging.info("Results saved with prefix: " + file_prefix)
+def amish_set_up():
 
     logging.info("Retrieving AMISh married-in and genotyped individuals")
     married_in = "/homes/thdang/trang_amish/ped-aware/implementation/amish_married_in.csv"
@@ -334,16 +335,21 @@ def amish(file_prefix):
     mcra_file = "/homes/thdang/trang_amish/ped-aware/implementation/amish3_phasedibd_final_sources.csv"
     mcras_df = pd.read_csv(mcra_file)
     sources = set(mcras_df["sources"].unique())
-    logging.debug("DEBUG SOURCES")
-    indvs = list(permutations(sources, 2))[:10]
 
-    logging.info("There are " + str(len(indvs)) + " pairs of mcras to go through.")
+    logging.info("There are " + str(len(sources)) + " sources.")
 
     logging.info("Initializing AMISH pedigree object")
     state_dict = {}
     with open("/homes/thdang/trang_amish/extended_state_dict.json", "r") as json_file:
         state_dict = json.loads(json_file.read())
     po = PedigreeObject.init_from_state(state_dict)
+    return po, sources, married_in, genotyped, mcras_df
+
+def amish(file_prefix):
+    logging.info("Results saved with prefix: " + file_prefix)
+    po, sources, married_in, genotyped, mcras_df = amish_set_up()
+    indvs = list(permutations(sources, 2))
+    logging.info("There are " + str(len(indvs)) + " pairs of individuals to go through.")
 
     validate_druid(po, indvs, married_in, genotyped, file_prefix, mcras_df)
 

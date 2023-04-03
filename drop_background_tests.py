@@ -33,7 +33,8 @@ def toy_set_up():
     po = PedigreeObject(translate_ids_to_nums_pedigrees(toy_dict1))
     married_in =  {14, 10, 24, 12, 11, 27} # ["a", "g", "k", "j", "i", "o"]
     genotyped =  {1, 2, 3, 4, 5, 6, 7, 8}
-    mcra_file = "/homes/thdang/trang_amish/ped-aware/implementation/toy3_phasedibd_final_sources.csv"
+    # mcra_file = "/homes/thdang/trang_amish/ped-aware/implementation/toy3_phasedibd_final_sources.csv"
+    mcra_file = "/homes/thdang/trang_amish/ped-aware/implementation/toy3_seg_final_sources.csv"
     mcra_df = pd.read_csv(mcra_file)
     # parse mcra df into bonsai ids
     mcra_df["sources"] = mcra_df["sources"].map(process_toy_ancestor_node)
@@ -163,6 +164,39 @@ def test_drop_background():
     ibd_kept = drop_background(node_dict, ca1, indept_gt_set1, ca2, indept_gt_set2, root_id, ibd_seg_list)
     print("IBDS kept: ")
     print(ibd_kept)
+
+def test_drop_background():
+    logging.info("------Test drop background on b and f--------")
+    po, married_in, genotyped, mcra_df, sources = toy_set_up()
+    node_dict = {-22: {-13: 3, -17: 3}}
+    ca1 = -13 # b
+    ca2 = -17 # f
+    node_dict.update(get_node_dict_for_root(-13, po))
+    node_dict.update(get_node_dict_for_root(-17, po))
+    assert(node_dict == {-22: {-13: 3, -17: 3}, 
+                        -13: {1: 1, 2: 1, 3: 1}, 
+                        -17: {8: 1, 6: 1, 7: 1}})
+    gt_set1 = po.rel_dict[ca1]['desc']
+    gt_set2 = po.rel_dict[ca2]['desc']
+    indept_gt_set1 = po.get_independent_inds(gt_set1)
+    assert(indept_gt_set1 == {1, 2, 3})
+    indept_gt_set2 = po.get_independent_inds(gt_set2)
+    assert(indept_gt_set2 == {8, 6, 7})
+    root_id = -22 # q
+    ibd_seg_list = read_ca_ibds(mcra_df)
+    print("IBD seg list before removal")
+    print(get_ibd_segs_between_sets(indept_gt_set1, indept_gt_set2, ibd_seg_list)[1])
+    # assert(get_ibd_segs_between_sets(indept_gt_set1, indept_gt_set2, ibd_seg_list)[1] ==
+    # {'21': 
+    # [[7, 2, '21', 10867286, 36244944, False, 25.377657999999997], 
+    # [2, 6, '21', 10867286, 36249317, False, 25.382030999999998], 
+    # [2, 8, '21', 10867286, 36249317, False, 25.382030999999998], 
+    # [2, 6, '21', 42583395, 48097120, False, 5.513724999999994], 
+    # [7, 2, '21', 42403402, 48083936, False, 5.6805340000000015], [2, 8, '21', 42403402, 48097120, False, 5.693717999999997]]})
+    ibd_kept = drop_background(node_dict, ca1, indept_gt_set1, ca2, indept_gt_set2, root_id, ibd_seg_list)
+    print("IBDS kept: ")
+    print(ibd_kept)
+
 
 def main():
     # test_toy_group_ibd_pairs()

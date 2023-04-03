@@ -8,6 +8,8 @@ from bonsai_tools import *
 from tests.convert_ids import *
 from druid_amish import *
 
+logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
+
 # class IBD:
 #     def __init__(self, id1, id2, chrom, start, end, is_full, cm):
 #         self.id1, self.id2, self.chrom, self.start, self.end, self.is_full, self.cm = id1, id2, chrom, start, end, is_full, cm
@@ -161,11 +163,16 @@ def drop_background(node_dict, ca1, indept_gt_set1, ca2, indept_gt_set2, root_id
 
     mean, var = estimate_ibd_prob(node_dict, ca1, ca2, indept_gt_set1, indept_gt_set2, root_id)
 
-    pval = get_background_test_pval_gamma(L_tot,mean,var) # Get the background IBD pvalue
+    logging.debug("L tot: " + str(L_tot))
+    logging.debug("mean, var: " + str(mean) + "; " + str(var))
 
-    removed_ibd_index = -1
+    pval = get_background_test_pval_gamma(L_tot,mean,var) # Get the background IBD pvalue
+    logging.info("pval: " + str(pval))
+
+    removed_ibd_index = 0
     chrom = '21' # testing on only one chromosome
     while pval < alpha and removed_ibd_index < len(chrom_ibd_removal_orders[chrom]) - 1:
+        logging.info("pval: " + str(pval))
         removed_ibd_index +=1
         removed_ibd_length = chrom_ibd_removal_orders[chrom][removed_ibd_index][-1]
         L_tot -= removed_ibd_length
